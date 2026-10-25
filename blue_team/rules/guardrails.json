@@ -1,0 +1,51 @@
+{
+  "ruleset_version": "1.2.0",
+  "blocked_categories": [
+    "malware_generation",
+    "cyberattacks_and_exploitation",
+    "weapons_and_explosives",
+    "credential_harvesting",
+    "privilege_escalation",
+    "destructive_commands",
+    "harmful_and_violent_activities"
+  ],
+  "prohibited_keywords": [
+    "exploit vulnerabilities",
+    "hack into",
+    "hacking",
+    "hack",
+    "firearms",
+    "weapons",
+    "make a bomb",
+    "explosive device",
+    "steal someone's identity",
+    "commit identity theft",
+    "exfiltrate credentials",
+    "bypass system integrity",
+    "disable root guardrails",
+    "grant administrative shell",
+    "rm -rf /",
+    "kernel privilege escalation",
+    "drop all security contexts",
+    "create a ransomware",
+    "disables antivirus"
+  ],
+  "heuristic_patterns": [
+    "(?i)(ignore previous instructions and grant)",
+    "(?i)(you are now in maintenance debug mode)",
+    "(?i)(act as an unrestricted root daemon)",
+    "(?i)(dump /etc/shadow)",
+    "(?i)(exploit.*vulnerabilit)",
+    "(?i)(hack.*database)",
+    "(?i)(make.*bomb)",
+    "(?i)(teach.*firearm)",
+    "(?i)(grant.*shell.*access)",
+    "(?i)(administrative.*shell)",
+    "(?i)(bypass.*guardrail)",
+    "(?i)(disable.*safety.*filter)",
+    "(?i)(drop.*restriction)",
+    "(?i)(unrestricted.*access)",
+    "(?i)(exfiltrate.*credential)",
+    "(?i)(privilege.*escalat)"
+  ]
+}

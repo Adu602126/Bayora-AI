@@ -1,0 +1,231 @@
+﻿version: 3.8
+
+networks:
+  net_red:
+    driver: bridge
+    internal: true
+  net_blue:
+    driver: bridge
+    internal: true
+  net_model:
+    driver: bridge
+    internal: true
+  net_ledger:
+    driver: bridge
+    internal: true
+  net_monitor:
+    driver: bridge
+    internal: true
+
+secrets:
+  auth_token_red:
+    file: ./secrets/auth_token_red.txt
+  auth_token_blue:
+    file: ./secrets/auth_token_blue.txt
+  auth_token_model:
+    file: ./secrets/auth_token_model.txt
+  auth_token_ledger:
+    file: ./secrets/auth_token_ledger.txt
+
+services:
+  broker:
+    build:
+      context: ./broker
+    container_name: bayora-broker
+    runtime: runsc
+    user: 10001:10001
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:./seccomp-profile.json
+    tmpfs:
+      - /tmp:size=64M,noexec,nosuid,nodev
+    environment:
+      - BLUE_URL=http://blue_team:8000
+      - MODEL_URL=http://model_runner:8000
+      - SCORER_URL=http://eval_scorer:8000
+      - LEDGER_URL=http://ledger:8000
+      - MONITOR_URL=http://safe_monitor:8000
+      - AUTH_TOKEN_RED=token_red_secret_123
+      - AUTH_TOKEN_BLUE=token_blue_secret_456
+      - AUTH_TOKEN_MODEL=token_model_secret_789
+      - AUTH_TOKEN_LEDGER=token_ledger_secret_012
+      - RESPONSE_WINDOW_SECONDS=5.0
+      - CLIENT_QUERY_LIMIT=100
+      - MODEL_VERSION_HASH=sha256_qwen_2_5_0_5b_v1
+      - DEFENCE_RULESET_HASH=sha256_ruleset_v2_strict
+    secrets:
+      - auth_token_red
+      - auth_token_blue
+      - auth_token_model
+      - auth_token_ledger
+    networks:
+      - net_red
+      - net_blue
+      - net_model
+      - net_ledger
+      - net_monitor
+    ports:
+      - 8099:8000
+    pids_limit: 100
+    cpuset: 0-1
+    deploy:
+      resources:
+        limits:
+          cpus: 2.0
+          memory: 1024M
+
+  red_team:
+    build:
+      context: ./red_team
+    container_name: bayora-red-team
+    runtime: runsc
+    user: 10001:10001
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=64M,noexec,nosuid,nodev
+    environment:
+      - BROKER_URL=http://broker:8000
+      - AUTH_TOKEN=token_red_secret_123
+    secrets:
+      - auth_token_red
+    networks:
+      - net_red
+    depends_on:
+      - broker
+    pids_limit: 50
+    cpuset: 2
+    deploy:
+      resources:
+        limits:
+          cpus: 1.0
+          memory: 512M
+
+  blue_team:
+    build:
+      context: ./blue_team
+    container_name: bayora-blue-team
+    runtime: runsc
+    user: 10001:10001
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=64M,noexec,nosuid,nodev
+    volumes:
+      - ./blue_team/rules/guardrails.json:/app/rules/guardrails.json:ro
+    environment:
+      - RULES_FILE_PATH=/app/rules/guardrails.json
+      - AUTH_TOKEN=token_blue_secret_456
+    secrets:
+      - auth_token_blue
+    networks:
+      - net_blue
+    pids_limit: 50
+    cpuset: 3
+    deploy:
+      resources:
+        limits:
+          cpus: 1.0
+          memory: 512M
+
+  model_runner:
+    build:
+      context: ./model_runner
+    container_name: bayora-model-runner
+    user: 10001:10001
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=256M,noexec,nosuid,nodev
+    environment:
+      - AUTH_TOKEN=token_model_secret_789
+      - DISABLE_PREFIX_CACHE=true
+    secrets:
+      - auth_token_model
+    networks:
+      - net_model
+    pids_limit: 100
+    cpuset: 4-5
+    deploy:
+      resources:
+        limits:
+          cpus: 2.0
+          memory: 4096M
+
+  eval_scorer:
+    build:
+      context: ./eval_scorer
+    container_name: bayora-eval-scorer
+    user: 10001:10001
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=64M,noexec,nosuid,nodev
+    environment:
+      - AUTH_TOKEN=token_model_secret_789
+    secrets:
+      - auth_token_model
+    networks:
+      - net_model
+    pids_limit: 50
+
+  ledger:
+    build:
+      context: ./ledger
+    container_name: bayora-ledger
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=64M,noexec,nosuid,nodev
+    volumes:
+      - ledger_data:/var/log/bayora_audit
+    environment:
+      - LOG_DIR_PATH=/var/log/bayora_audit
+      - AUTH_TOKEN=token_ledger_secret_012
+      - HMAC_SECRET_KEY=ledger_isolated_key_999888
+    secrets:
+      - auth_token_ledger
+    networks:
+      - net_ledger
+    pids_limit: 50
+
+  safe_monitor:
+    build:
+      context: ./monitor
+    container_name: bayora-monitor
+    user: 10001:10001
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - net_monitor
+    pids_limit: 30
+    deploy:
+      resources:
+        limits:
+          cpus: 0.5
+          memory: 256M
+
+volumes:
+  ledger_data:
+    driver: local

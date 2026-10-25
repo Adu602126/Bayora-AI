@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /api/
+Disallow: /onboard
+Allow: /
+
+Sitemap: https://safepath.indore.app/sitemap.xml

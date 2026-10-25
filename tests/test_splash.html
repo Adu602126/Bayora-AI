@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bayora Loader Test Preview</title>
+<style>
+body {
+    margin: 0;
+    padding: 0;
+    background: #030712;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+    overflow: hidden;
+}
+
+/* Fullscreen Splash Overlay */
+.bayora-splash-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 2147483640 !important;
+    background-color: #030712 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    animation: bayoraSplashAutoDismiss 0.5s ease-out 6.0s forwards !important;
+}
+
+@keyframes bayoraSplashAutoDismiss {
+    0%, 88% {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+    }
+    98% {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+    100% {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        display: none !important;
+    }
+}
+
+/* Video: Hardware Composited but NOT exclusive direct overlay */
+#bayora-splash-video {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    pointer-events: none !important;
+    z-index: 10 !important;
+    filter: drop-shadow(0 0 0 transparent) !important;
+    transform: translate3d(0, 0, 0) !important;
+}
+
+/* Dark Contrast Scrim over video so loader pops with extreme clarity */
+.bayora-video-scrim {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(180deg, rgba(3, 7, 18, 0.45) 0%, transparent 30%, rgba(3, 7, 18, 0.85) 70%, rgba(3, 7, 18, 0.98) 100%) !important;
+    pointer-events: none !important;
+    z-index: 50 !important;
+}
+
+/* Skip Intro Button */
+#bayora-splash-skip {
+    position: fixed !important;
+    top: 26px !important;
+    right: 32px !important;
+    z-index: 2147483647 !important;
+    transform: translate3d(0, 0, 10000px) !important;
+    background: rgba(10, 18, 38, 0.92) !important;
+    border: 2px solid #00D0FF !important;
+    color: #00D0FF !important;
+    padding: 10px 22px !important;
+    border-radius: 24px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.5px !important;
+    cursor: pointer !important;
+    backdrop-filter: blur(14px) !important;
+    box-shadow: 0 0 22px rgba(0, 208, 255, 0.6) !important;
+    transition: all 0.2s ease !important;
+}
+#bayora-splash-skip:hover {
+    background: rgba(0, 208, 255, 0.35) !important;
+    box-shadow: 0 0 35px rgba(0, 208, 255, 0.9) !important;
+    transform: translate3d(0, 0, 10000px) scale(1.06) !important;
+}
+
+/* PROMINENT GAME-STYLE LOADER OVERLAY (Fixed, Elevated, Lower-Third) */
+.bayora-loader-container {
+    position: fixed !important;
+    bottom: 12% !important;
+    left: 50% !important;
+    transform: translate3d(-50%, 0, 10000px) !important;
+    width: 88% !important;
+    max-width: 800px !important;
+    z-index: 2147483647 !important;
+    isolation: isolate !important;
+    will-change: transform, opacity !important;
+    padding: 22px 28px 18px !important;
+    border-radius: 18px !important;
+    background: rgba(3, 8, 22, 0.95) !important;
+    border: 2.5px solid #00D0FF !important;
+    box-shadow: 0 0 45px rgba(0, 208, 255, 0.65), 0 25px 65px rgba(0, 0, 0, 0.96), inset 0 0 25px rgba(0, 208, 255, 0.25) !important;
+    backdrop-filter: blur(20px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    pointer-events: auto !important;
+}
+
+/* Header with Title and Percentage */
+.bayora-loader-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+}
+.bayora-loader-title {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace !important;
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    letter-spacing: 2px !important;
+    color: #f8fafc !important;
+    text-transform: uppercase !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    text-shadow: 0 0 12px rgba(0, 208, 255, 0.9) !important;
+}
+.bayora-percentage-text {
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 19px !important;
+    font-weight: 900 !important;
+    color: #00D0FF !important;
+    letter-spacing: 2px !important;
+    text-shadow: 0 0 16px rgba(0, 208, 255, 1), 0 0 32px rgba(0, 208, 255, 0.7) !important;
+}
+
+/* 16px Dark Translucent Progress Track */
+.bayora-track {
+    width: 100% !important;
+    height: 16px !important;
+    background: rgba(8, 14, 32, 0.96) !important;
+    border: 2px solid rgba(0, 208, 255, 0.65) !important;
+    border-radius: 999px !important;
+    position: relative !important;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 12px rgba(0, 208, 255, 0.25) !important;
+}
+
+/* Glowing Cyan Progress Bar */
+.bayora-bar {
+    height: 100% !important;
+    width: 0% !important;
+    background: linear-gradient(90deg, rgba(0, 208, 255, 0.35) 0%, rgba(0, 208, 255, 0.9) 70%, #00D0FF 100%) !important;
+    border-radius: 999px !important;
+    box-shadow: 0 0 20px #00D0FF, 0 0 40px #00D0FF, 0 0 60px rgba(0, 208, 255, 0.8) !important;
+    position: relative !important;
+    animation: bayoraProgressFill 6.0s cubic-bezier(0.2, 0.7, 0.25, 1) forwards !important;
+}
+
+@keyframes bayoraProgressFill {
+    0%   { width: 0%; }
+    15%  { width: 20%; }
+    35%  { width: 44%; }
+    60%  { width: 72%; }
+    85%  { width: 92%; }
+    96%  { width: 98%; }
+    100% { width: 100%; }
+}
+
+/* CROSSED SWORDS ICON ⚔️ RIDING THE TIP OF THE BAR */
+.bayora-sword-marker {
+    position: absolute !important;
+    top: 50% !important;
+    right: -24px !important;
+    transform: translate(50%, -50%) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: none !important;
+    z-index: 2147483647 !important;
+}
+
+.bayora-sword-icon {
+    display: inline-block !important;
+    font-size: 38px !important;
+    line-height: 1 !important;
+    filter: drop-shadow(0 0 10px #00D0FF) drop-shadow(0 0 24px rgba(0, 208, 255, 1)) drop-shadow(0 0 38px #00D0FF) !important;
+    animation: bayoraSwordBattleSwing 0.6s ease-in-out infinite alternate !important;
+    transform-origin: center center !important;
+}
+
+@keyframes bayoraSwordBattleSwing {
+    0%   { transform: rotate(-26deg) scale(0.92); }
+    100% { transform: rotate(26deg) scale(1.36); }
+}
+
+.bayora-sword-glow {
+    position: absolute !important;
+    width: 52px !important;
+    height: 52px !important;
+    background: radial-gradient(circle, rgba(0, 208, 255, 0.8) 0%, transparent 70%) !important;
+    border-radius: 50% !important;
+    animation: bayoraPulseGlow 0.6s ease-in-out infinite alternate !important;
+}
+
+@keyframes bayoraPulseGlow {
+    0%   { opacity: 0.5; transform: scale(0.85); }
+    100% { opacity: 1.0; transform: scale(1.45); }
+}
+
+.bayora-loader-subtext {
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 11.5px !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace !important;
+    font-weight: 700 !important;
+    color: #94a3b8 !important;
+    letter-spacing: 1.5px !important;
+}
+.bayora-loader-subtext span {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+</style>
+</head>
+<body>
+
+<div id="bayora-splash-root" class="bayora-splash-overlay">
+    <!-- Fullscreen Video -->
+    <video
+        id="bayora-splash-video"
+        playsinline
+        muted
+        autoplay
+        preload="auto"
+        controlslist="nodownload nofullscreen noremoteplayback"
+        disablepictureinpicture
+        onended="dismissSplash()"
+    >
+        <source src="images/Intro_page_bayora_ai.mp4" type="video/mp4">
+    </video>
+
+    <!-- Contrast Scrim -->
+    <div class="bayora-video-scrim"></div>
+
+    <!-- Skip Intro Button -->
+    <button id="bayora-splash-skip" onclick="dismissSplash()" title="Skip Intro (Esc)">
+        <span>SKIP INTRO</span> ⏭
+    </button>
+
+    <!-- GAME-STYLE LOADER OVERLAY (Prominently centered in lower-third) -->
+    <div class="bayora-loader-container">
+        <div class="bayora-loader-header">
+            <span class="bayora-loader-title">
+                <span style="font-size: 20px; filter: drop-shadow(0 0 8px #00D0FF);">⚔️</span>
+                INITIALIZING BAYORA DEFENSE GRID // PS-04 ARENA
+            </span>
+            <span id="bayora-percentage-text" class="bayora-percentage-text">Loading... 0%</span>
+        </div>
+
+        <!-- 16px Dark Translucent Track -->
+        <div class="bayora-track">
+            <div id="bayora-progress-bar" class="bayora-bar">
+                <div class="bayora-sword-marker">
+                    <span class="bayora-sword-icon">⚔️</span>
+                    <div class="bayora-sword-glow"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bayora-loader-subtext">
+            <span>🛡️ TCB ISOLATION ACTIVE</span>
+            <span>⚡ ZERO TIMING LEAKAGE</span>
+            <span>🔐 HMAC-SHA256 LEDGER PINNED</span>
+        </div>
+    </div>
+</div>
+
+<script>
+function dismissSplash() {
+    var root = document.getElementById('bayora-splash-root');
+    if (root) {
+        root.style.transition = 'opacity 0.45s ease-out';
+        root.style.opacity = '0';
+        setTimeout(function() {
+            if (root && root.parentNode) root.parentNode.removeChild(root);
+        }, 480);
+    }
+}
+
+var pText = document.getElementById('bayora-percentage-text');
+var pBar = document.getElementById('bayora-progress-bar');
+var t0 = Date.now();
+var dur = 6000;
+
+var timer = setInterval(function() {
+    var elapsed = Date.now() - t0;
+    var pct = Math.min(100, Math.floor((elapsed / dur) * 100));
+    if (pText) pText.innerText = 'Loading... ' + pct + '%';
+    if (pBar) pBar.style.width = pct + '%';
+    if (pct >= 100) {
+        clearInterval(timer);
+        setTimeout(dismissSplash, 350);
+    }
+}, 40);
+
+window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+        dismissSplash();
+    }
+});
+
+setTimeout(dismissSplash, 6400);
+</script>
+
+</body>
+</html>

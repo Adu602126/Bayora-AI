@@ -1,0 +1,26 @@
+﻿{
+  defaultAction: SCMP_ACT_ERRNO,
+  architectures: [
+    SCMP_ARCH_X86_64,
+    SCMP_ARCH_X86,
+    SCMP_ARCH_X32
+  ],
+  syscalls: [
+    {
+      names: [
+        accept, accept4, access, arch_prctl, bind, brk, clock_gettime,
+        clone, clone3, close, connect, dup, dup2, dup3, epoll_create,
+        epoll_create1, epoll_ctl, epoll_pwait, epoll_wait, exit, exit_group,
+        fcntl, fstat, futex, getcwd, getdents64, getegid, geteuid,
+        getgid, getpid, getppid, getsockname, getsockopt, gettid, getuid,
+        ioctl, listen, lseek, madvise, mmap, mprotect, munmap, nanosleep,
+        newfstatat, openat, pipe2, poll, ppoll, pselect6, read, readlink,
+        readlinkat, recvfrom, recvmsg, rt_sigaction, rt_sigprocmask,
+        rt_sigreturn, sched_getaffinity, sched_yield, select, sendfile,
+        sendmmsg, sendmsg, sendto, setsockopt, shutdown, sigaltstack,
+        socket, stat, tgkill, wait4, write, writev
+      ],
+      action: SCMP_ACT_ALLOW
+    }
+  ]
+}
